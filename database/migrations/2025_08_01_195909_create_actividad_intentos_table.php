@@ -6,26 +6,34 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::create('actividad_intentos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('actividad_id')->constrained('actividades')->onDelete('cascade');
-            $table->string('alumno_nombre');
+            $table->foreignId('alumno_id')->constrained('alumnos')->onDelete('cascade');
+            $table->string('alumno_nombre'); // Para mantener compatibilidad
             $table->json('respuestas');
-            $table->integer('puntaje')->default(0);
-            $table->integer('total_preguntas')->default(0);
-            $table->integer('tiempo_completado')->default(0); // en segundos
+            $table->integer('puntaje');
+            $table->integer('total_preguntas');
+            $table->decimal('porcentaje', 5, 2);
+            $table->integer('numero_intento');
+            $table->integer('tiempo_completado')->default(0);
             $table->timestamps();
-            
+
             // Índices para mejorar rendimiento
-            $table->index(['actividad_id', 'alumno_nombre']);
-            $table->index('alumno_nombre');
+            $table->index(['actividad_id', 'alumno_id']);
             $table->index('created_at');
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
         Schema::dropIfExists('actividad_intentos');
     }

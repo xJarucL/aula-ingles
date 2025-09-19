@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Alumno extends Model
 {
     use HasFactory;
+    protected $table = 'alumnos';
+
 
     protected $fillable = [
         'nombre',
@@ -157,12 +159,12 @@ class Alumno extends Model
         if ($cuatrimestre < $this->cuatrimestre_actual) {
             return true;
         }
-        
+
         // Si es su cuatrimestre actual, solo hasta su parcial actual
         if ($cuatrimestre == $this->cuatrimestre_actual) {
             return $parcial <= $this->parcial_actual;
         }
-        
+
         // No puede acceder a cuatrimestres futuros
         return false;
     }
@@ -224,7 +226,7 @@ class Alumno extends Model
         $cuatrimestre = Cuatrimestre::where('orden', $this->cuatrimestre_actual)
                                   ->where('activo', true)
                                   ->first();
-        
+
         if (!$cuatrimestre) {
             return null;
         }
@@ -250,7 +252,7 @@ class Alumno extends Model
         $totalIntentos = $this->intentos()->count();
         $promedioGeneral = $this->intentos()->avg('porcentaje') ?? 0;
         $actividadesCompletadas = $this->intentos()->distinct('actividad_id')->count();
-        
+
         $mejorCalificacion = $this->intentos()->max('porcentaje') ?? 0;
         $ultimaActividad = $this->intentos()->latest()->first();
 
@@ -383,7 +385,7 @@ class Alumno extends Model
     public static function generarMatricula(int $año = null): string
     {
         $año = $año ?? date('Y');
-        
+
         // Buscar la última matrícula del año
         $ultimaMatricula = self::where('matricula', 'like', $año . '%')
                               ->orderBy('matricula', 'desc')

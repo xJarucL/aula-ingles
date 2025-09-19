@@ -21,7 +21,7 @@ use Faker\Factory as Faker;
 class SistemaAlumnosSeeder extends Seeder
 {
     private $faker;
-    
+
     public function __construct()
     {
         $this->faker = Faker::create('es_ES'); // Faker en español
@@ -35,7 +35,7 @@ class SistemaAlumnosSeeder extends Seeder
         $this->command->info('📚 Creando carreras...');
         $carrerasBase = [
             'Tecnologías de la Información y Comunicación' => 'TICS',
-            'Contaduría' => 'CONT', 
+            'Contaduría' => 'CONT',
             'Enfermería' => 'ENF',
             'Gastronomía' => 'GAST',
             'Agricultura Sustentable' => 'AGRI',
@@ -70,9 +70,7 @@ class SistemaAlumnosSeeder extends Seeder
                     'cuatrimestre_id' => $cuatrimestre->id,
                     'numero' => $parcial
                 ], [
-                    'nombre' => $this->getNombreParcial($parcial),
-                    'descripcion' => "Evaluaciones del {$parcial}° parcial del {$cuatrimestre->nombre}",
-                    'activo' => true
+                    'nombre' => $this->getNombreParcial($parcial)
                 ]);
             }
         }
@@ -102,7 +100,7 @@ class SistemaAlumnosSeeder extends Seeder
             $nombre = $this->faker->firstName();
             $apellido = $this->faker->lastName();
             $email = strtolower($nombre . '.' . $apellido) . '@utenglish.edu.mx';
-            
+
             $profesor = User::firstOrCreate(['email' => $email], [
                 'name' => "Prof. {$nombre} {$apellido}",
                 'email' => $email,
@@ -125,14 +123,14 @@ class SistemaAlumnosSeeder extends Seeder
 
         $grupos = [];
         $periodoActivo = PeriodoEscolar::where('activo', true)->first();
-        
+
         foreach (Carrera::all() as $carrera) {
             foreach ($materiasTemplates as $cuatrimestre => $materias) {
                 foreach ($materias as $index => $nombreMateria) {
-                    $codigo = strtoupper(substr($carrera->codigo, 0, 2)) . '-' . $cuatrimestre . sprintf('%02d', $index + 1);
-                    
+                    $codigo = strtoupper($carrera->codigo) . '-' . $cuatrimestre . sprintf('%02d', $index + 1);
+
                     $materia = Materia::firstOrCreate([
-                        'codigo' => $codigo, 
+                        'codigo' => $codigo,
                         'carrera_id' => $carrera->id
                     ], [
                         'nombre' => $nombreMateria,
@@ -152,8 +150,7 @@ class SistemaAlumnosSeeder extends Seeder
                             'nombre' => $materia->nombre . ' - Grupo ' . $letraGrupo,
                             'codigo' => $codigo . '-' . $letraGrupo,
                             'profesor_id' => $profesoresCreados[array_rand($profesoresCreados)]->id,
-                            'periodo_id' => $periodoActivo->id,
-                            'cupo_maximo' => $this->faker->numberBetween(20, 35),
+                            'periodo_escolar_id' => $periodoActivo->id,
                             'activo' => true
                         ]);
                         $grupos[] = $grupo;
@@ -166,12 +163,12 @@ class SistemaAlumnosSeeder extends Seeder
         $this->command->info('👨‍🎓 Creando alumnos...');
         $alumnosCreados = [];
         $carreraTics = Carrera::where('codigo', 'TICS')->first();
-        
+
         for ($i = 1; $i <= 20; $i++) {
             $nombre = $this->faker->firstName();
             $apellidos = $this->faker->lastName() . ' ' . $this->faker->lastName();
             $matricula = '2025' . sprintf('%06d', $i);
-            
+
             $alumno = Alumno::firstOrCreate(['matricula' => $matricula], [
                 'nombre' => $nombre,
                 'apellidos' => $apellidos,
@@ -189,19 +186,19 @@ class SistemaAlumnosSeeder extends Seeder
         $this->command->info('📝 Creando inscripciones...');
         foreach ($alumnosCreados as $alumno) {
             $gruposDisponibles = collect($grupos)->filter(function($grupo) use ($alumno) {
-                return $grupo->materia->carrera_id == $alumno->carrera_id && 
+                return $grupo->materia->carrera_id == $alumno->carrera_id &&
                        $grupo->materia->cuatrimestre_numero == $alumno->cuatrimestre_actual;
             });
 
             // Inscribir en 2-4 materias aleatorias
             $gruposParaInscribir = $gruposDisponibles->random(min($this->faker->numberBetween(2, 4), $gruposDisponibles->count()));
-            
+
             foreach ($gruposParaInscribir as $grupo) {
                 Inscripcion::firstOrCreate([
                     'alumno_id' => $alumno->id,
                     'grupo_id' => $grupo->id
                 ], [
-                    'estado' => $this->faker->randomElement(['inscrito', 'activo', 'completado']),
+                    'estado' => $this->faker->randomElement(['inscrito', 'retirado', 'completado']),
                     'fecha_inscripcion' => $this->faker->dateTimeBetween('-60 days', 'now')
                 ]);
             }
@@ -209,17 +206,17 @@ class SistemaAlumnosSeeder extends Seeder
 
         // 9. ✅ CREAR ACTIVIDADES DINÁMICAS ✅
         $this->command->info('📋 Creando actividades dinámicas...');
-        
+
         $parciales = Parcial::whereHas('cuatrimestre', function($q) {
             $q->whereIn('orden', [1, 2, 3]);
         })->get();
 
         foreach ($parciales as $parcial) {
             $numActividades = $this->faker->numberBetween(3, 8);
-            
+
             for ($a = 1; $a <= $numActividades; $a++) {
                 $tipoActividad = $this->faker->randomElement(['quiz', 'quiz', 'quiz', 'completar']); // Más quizzes
-                
+
                 $actividad = [
                     'nombre' => $this->generarNombreActividad($tipoActividad),
                     'descripcion' => $this->generarDescripcionActividad($tipoActividad),
@@ -248,7 +245,7 @@ class SistemaAlumnosSeeder extends Seeder
     {
         $nombres = [
             1 => 'Primer Cuatrimestre',
-            2 => 'Segundo Cuatrimestre', 
+            2 => 'Segundo Cuatrimestre',
             3 => 'Tercer Cuatrimestre',
             4 => 'Cuarto Cuatrimestre',
             5 => 'Quinto Cuatrimestre',
@@ -271,13 +268,13 @@ class SistemaAlumnosSeeder extends Seeder
             'Quiz: Días de la Semana', 'Quiz: Profesiones', 'Quiz: Animales',
             'Quiz: Partes del Cuerpo', 'Quiz: La Casa', 'Quiz: Transporte'
         ];
-        
+
         $nombresCompletar = [
             'Completar: Oraciones Básicas', 'Completar: Verbos Regulares', 'Completar: Artículos',
             'Completar: Preposiciones', 'Completar: Adjetivos', 'Completar: Pronombres'
         ];
 
-        return $tipo === 'quiz' 
+        return $tipo === 'quiz'
             ? $this->faker->randomElement($nombresQuiz)
             : $this->faker->randomElement($nombresCompletar);
     }
@@ -409,13 +406,13 @@ class SistemaAlumnosSeeder extends Seeder
         $this->command->info('- Actividades: ' . Actividad::count());
         $this->command->info('');
         $this->command->info('🔑 DATOS DE PRUEBA PARA LOGIN:');
-        
+
         // Mostrar algunos alumnos de ejemplo
         $alumnosEjemplo = collect($alumnos)->take(5);
         foreach ($alumnosEjemplo as $alumno) {
             $this->command->info("- Matrícula: {$alumno->matricula} ({$alumno->nombre} {$alumno->apellidos}) - {$alumno->cuatrimestre_actual}°");
         }
-        
+
         $this->command->info('- Carrera: TICS (Tecnologías de la Información)');
         $this->command->info('');
         $this->command->info('👩‍🏫 PROFESORES (Password: 123456):');
