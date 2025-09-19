@@ -21,12 +21,12 @@ class EnsureUserHasRole
                 ->with('auth_fail', 'Necesitas iniciar sesión');
         }
 
-        $rol = Auth::user()->rol ?? null;
+        // $rol = Auth::user()->rol ?? null;
 
-        if (!in_array($rol, $roles, true)) {
-            return redirect()->route($loginRoute)
-                ->with('auth_fail', 'Usuario no autorizado');
-        }
+        // if (!in_array($rol, $roles, true)) {
+        //     return redirect()->route($loginRoute)
+        //         ->with('auth_fail', 'Usuario no autorizado');
+        // }
 
         return $next($request);
     }

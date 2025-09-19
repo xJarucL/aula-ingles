@@ -15,20 +15,10 @@ class UserSedeer extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'jaru',
-            'email' => 'jarunyta1096@gmail.com',
-            'matricula' => '202200096',
-            'rol' => 'alumno',
-            'grupo_id' => '1',
-            'password' => Hash::make('jaru123')
-        ]);
-        User::create([
-            'name' => 'jarucl',
+            'name' => 'Prof. Jaru',
             'email' => 'jaruny.cl@gmail.com',
-            'matricula' => '202100096',
-            'rol' => 'admin',
-            'grupo_id' => '1',
-            'password' => Hash::make('jaru123')
+            'password' => Hash::make('12345'),
+            'email_verified_at' => now()
         ]);
     }
 }
